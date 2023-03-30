@@ -167,6 +167,8 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+		for(int i = 0; i<100;i++)
+		{
 		/* Send test packet */
 	  outgoingBuffer[0] = rand() & 0xFF;
 	  outgoingBuffer[1] = rand() & 0xFF;
@@ -176,10 +178,27 @@ int main(void)
 	  outgoingBuffer[5] = rand() & 0xFF;
 	  outgoingBuffer[6] = rand() & 0xFF;
 	  SI4463_Transmit(&si4463, outgoingBuffer, APP_PACKET_LEN);
-
-	  uint32_t newDelay = 500 + ((rand() & 0xF) * 100);
-	  HAL_Delay(newDelay);
+		refresh_watchdog();
+	  HAL_Delay(100);//here you can select how fast you want to transmit
+		
 	  /* End of send of test packet */
+		}
+		for(int j = 0; j<100;j++)
+		{
+		SI4463_ClearRxFifo(&si4463);
+  /* Start RX mode.
+   * SI4463_StartRx() put a chip in non-armed mode in cases:
+   * - successfully receive a packet;
+   * - invoked RX_TIMEOUT;
+   * - invalid receive.
+   * For receiveing next packet you have to invoke SI4463_StartRx() again!*/
+  SI4463_StartRx(&si4463, APP_PACKET_LEN, false, false, false);
+		refresh_watchdog();
+	  HAL_Delay(100);//here you can select how fast you want to transmit
+		
+	  /* End of send of test packet */
+		}
+		
   }
   /* USER CODE END 3 */
 }
@@ -769,6 +788,14 @@ void SI4463_Select(void)
 void SI4463_Deselect(void)
 {
 	HAL_GPIO_WritePin(TX_nSEL_GPIO_Port, TX_nSEL_Pin, GPIO_PIN_SET);
+}
+
+void refresh_watchdog(void)
+{
+	HAL_GPIO_WritePin(WDO_GPIO_Port,WDO_Pin,GPIO_PIN_SET);//here you can select that how the watchdog will be reset, active high or active low
+	HAL_Delay(10);
+	HAL_GPIO_WritePin(WDO_GPIO_Port,WDO_Pin,GPIO_PIN_RESET);
+	
 }
 /* USER CODE END 4 */
 
